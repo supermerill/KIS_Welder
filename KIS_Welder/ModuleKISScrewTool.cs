@@ -87,8 +87,8 @@ namespace KIS_Welder
 				return false;
 			}
             //Debug.Log("OnCheckDetach2 " + (partToDetach == null ? "null" : partToDetach.name)
-            //    + " =parent=> "+(partToDetach.parent == null ? "null" : partToDetach.parent.name)
-            //    + " & has mod? " + (partToDetach.Modules == null));
+            //    + " =parent=> " + (partToDetach.parent == null ? "null" : partToDetach.parent.name)
+            //    + " & has mod? " + (partToDetach.Modules != null));
 			if (partToDetach.Modules == null) return true;
 			// Check if part can be detached from parent with this tool
             //Debug.Log("OnCheckDetach3 " + partToDetach.Modules.Contains("ModuleAttachMode"));
@@ -101,7 +101,7 @@ namespace KIS_Welder
 					errorMsg = new string[] { "KIS/Textures/forbidden", "Can't grab", "(Part can't be detached without a tool" };
 					return false;
 				}
-				if (isWeldingTool && !mkpam.canBeWeld)
+				if (isWeldingTool && (!mkpam.canBeWeld || !mkpam.isWelded))
 				{
 					errorMsg = new string[] { "KIS/Textures/forbidden", "Can't grab", "(Part can't be detached without a screwdriver" };
 					return false;
@@ -118,7 +118,7 @@ namespace KIS_Welder
 
 		// apply the screw/weld property
         public override void OnAttachToolUsed(Part srcPart, Part tgtPart, KISAttachType moveType, KISAddonPointer.PointerTarget pointerTarget)
-		{
+        {
             base.OnAttachToolUsed(srcPart, tgtPart, moveType, pointerTarget);
             //Debug.Log("OnItemMove2 " + (srcPart == null ? "null" : srcPart.name) + " => " +
             //    (tgtPart == null ? "null" : tgtPart.name) + ", " + moveType + ", " + pointerTarget);
@@ -135,7 +135,7 @@ namespace KIS_Welder
 
 		//to attach, the receiver (parent) parts need the same canWeld proty than the tool (children part already check in OnItemUse)
 		protected override bool OnCheckAttach(Part srcPart, Part tgtPart, ref string toolInvalidMsg)
-		{
+        {
 			if (!base.OnCheckAttach(srcPart, tgtPart, ref toolInvalidMsg)) return false;
 			//default (when ModuleAttachMode is not here) : magical yes
 			bool cannotAttach = false;
@@ -146,8 +146,8 @@ namespace KIS_Welder
 				cannotAttach = !mkpam.canBeWeld && !mkpam.canBeScrewed;
 				if (!cannotAttach) wrongTool = isWeldingTool ? !mkpam.canBeWeld : !mkpam.canBeScrewed;
 			}
-			//Debug.Log("OnCheckAttach2 " + (srcPart == null ? "null" : srcPart.name) + " => " +
-			//	(tgtPart == null ? "null" : tgtPart.name) + ", " + wrongTool + ", " + cannotAttach);
+            //Debug.Log("OnCheckAttach2 " + (srcPart == null ? "null" : srcPart.name) + " => " +
+            //    (tgtPart == null ? "null" : tgtPart.name) + ", " + wrongTool + ", " + cannotAttach);
 			if (!wrongTool && !cannotAttach)
 			{
 				return true;
