@@ -18,20 +18,21 @@ namespace KIS_Welder
 		public override void OnItemUse(KIS_Item item, KIS_Item.UseFrom useFrom)
 		{
 			// Check if grab key is pressed
+			//if (useFrom == KIS_Item.UseFrom.KeyDown)
+			//{
+			//    KISAddonPickup.instance.EnableAttachMode();
+			//}
+
+			// Check if grab key is pressed
 			if (useFrom == KIS_Item.UseFrom.KeyDown)
 			{
-				if (!KISAddonPickup.draggedPart && !KISAddonPickup.instance.grabActive && !KISAddonPointer.isRunning)
-				{
-					item.PlaySound(KIS_Shared.bipWrongSndPath);
-					ScreenMessages.PostScreenMessage("Use this tool while in drop mode to attach / Use grab key to detach", 5, ScreenMessageStyle.UPPER_CENTER);
-				}
 				if (KISAddonPointer.isRunning && KISAddonPointer.pointerTarget != KISAddonPointer.PointerTarget.PartMount)
 				{
-					float attachPartMass = KISAddonPointer.partToAttach.mass + KISAddonPointer.partToAttach.GetResourceMass();
-					if (attachPartMass < attachMaxMass)
+					//float attachPartMass = KISAddonPointer.partToAttach.mass + KISAddonPointer.partToAttach.GetResourceMass();
+					//if (attachPartMass < attachMaxMass)
 					{
 						//test if the tool can attach this part (screw or weld)
-                        //default (when ModuleAttachMode is not here) : magical yes
+						//default (when ModuleAttachMode is not here) : magical yes
 						bool testIfCanAttachPart = true;
 						if (KISAddonPointer.partToAttach.Modules.Contains("ModuleAttachMode"))
 						{
@@ -54,28 +55,34 @@ namespace KIS_Welder
 						}
 						if (testIfCanAttachPart)
 						{
-							KISAddonPickup.instance.pointerMode = KISAddonPickup.PointerMode.Attach;
-							KISAddonPointer.allowStack = allowStack;
-							item.PlaySound(changeModeSndPath);
+							//KISAddonPickup.instance.pointerMode = KISAddonPickup.PointerMode.Attach;
+							//KISAddonPointer.allowStack = allowStack;
+							//item.PlaySound(changeModeSndPath);
+							KISAddonPickup.instance.EnableAttachMode();
 						}
 					}
-					else
-					{
-						item.PlaySound(KIS_Shared.bipWrongSndPath);
-						ScreenMessages.PostScreenMessage("This part is too heavy for this tool", 5, ScreenMessageStyle.UPPER_CENTER);
-					}
+					//else
+					//{
+					//	item.PlaySound(KIS_Shared.bipWrongSndPath);
+					//	ScreenMessages.PostScreenMessage("This part is too heavy for this tool", 5, ScreenMessageStyle.UPPER_CENTER);
+					//}
+				}
+
+				if (useFrom == KIS_Item.UseFrom.KeyUp)
+				{
+					KISAddonPickup.instance.DisableAttachMode();
 				}
 
 			}
-			if (useFrom == KIS_Item.UseFrom.KeyUp)
-			{
-				if (KISAddonPointer.isRunning && KISAddonPickup.instance.pointerMode == KISAddonPickup.PointerMode.Attach)
-				{
-					KISAddonPickup.instance.pointerMode = KISAddonPickup.PointerMode.Drop;
-					KISAddonPointer.allowStack = false;
-					item.PlaySound(changeModeSndPath);
-				}
-			}
+			//if (useFrom == KIS_Item.UseFrom.KeyUp)
+			//{
+			//    if (KISAddonPointer.isRunning && KISAddonPickup.instance.pointerMode == KISAddonPickup.PointerMode.Attach)
+			//    {
+			//        KISAddonPickup.instance.pointerMode = KISAddonPickup.PointerMode.Drop;
+			//        KISAddonPointer.allowStack = false;
+			//        item.PlaySound(changeModeSndPath);
+			//    }
+			//}
 
 		}
 
@@ -86,16 +93,16 @@ namespace KIS_Welder
 			{
 				return false;
 			}
-            //Debug.Log("OnCheckDetach2 " + (partToDetach == null ? "null" : partToDetach.name)
-            //    + " =parent=> " + (partToDetach.parent == null ? "null" : partToDetach.parent.name)
-            //    + " & has mod? " + (partToDetach.Modules != null));
+			//Debug.Log("OnCheckDetach2 " + (partToDetach == null ? "null" : partToDetach.name)
+			//    + " =parent=> " + (partToDetach.parent == null ? "null" : partToDetach.parent.name)
+			//    + " & has mod? " + (partToDetach.Modules != null));
 			if (partToDetach.Modules == null) return true;
 			// Check if part can be detached from parent with this tool
-            //Debug.Log("OnCheckDetach3 " + partToDetach.Modules.Contains("ModuleAttachMode"));
+			//Debug.Log("OnCheckDetach2.2 " + partToDetach.Modules.Contains("ModuleAttachMode"));
 			if (partToDetach.parent && partToDetach.Modules.Contains("ModuleAttachMode"))
 			{
 				ModuleAttachMode mkpam = (partToDetach.Modules["ModuleAttachMode"] as ModuleAttachMode);
-                //Debug.Log("OnCheckDetach4.1 " + isWeldingTool + ", " + mkpam.canBeScrewed + ", " + mkpam.canBeWeld + " : " + mkpam.isWelded);
+				//Debug.Log("OnCheckDetach2.3 " + isWeldingTool + ", " + mkpam.canBeScrewed + ", " + mkpam.canBeWeld + " : " + mkpam.isWelded);
 				if (!mkpam.canBeWeld && !mkpam.canBeScrewed)
 				{
 					errorMsg = new string[] { "KIS/Textures/forbidden", "Can't grab", "(Part can't be detached without a tool" };
@@ -117,25 +124,26 @@ namespace KIS_Welder
 		}
 
 		// apply the screw/weld property
-        public override void OnAttachToolUsed(Part srcPart, Part tgtPart, KISAttachType moveType, KISAddonPointer.PointerTarget pointerTarget)
-        {
-            base.OnAttachToolUsed(srcPart, tgtPart, moveType, pointerTarget);
-            //Debug.Log("OnItemMove2 " + (srcPart == null ? "null" : srcPart.name) + " => " +
-            //    (tgtPart == null ? "null" : tgtPart.name) + ", " + moveType + ", " + pointerTarget);
+		public override void OnAttachToolUsed(Part srcPart, Part tgtPart, KISAttachType moveType, KISAddonPointer.PointerTarget pointerTarget)
+		{
+			base.OnAttachToolUsed(srcPart, tgtPart, moveType, pointerTarget);
+			//Debug.Log("OnItemMove2 begin" + (srcPart == null ? "null" : srcPart.name) + " => " +
+			//    (tgtPart == null ? "null" : tgtPart.name) + ", " + moveType + ", " + pointerTarget);
 			//set welded if needed
-            if ((moveType == KISAttachType.ATTACH)
+			if ((moveType == KISAttachType.ATTACH)
 				&& srcPart.Modules.Contains("ModuleAttachMode")
 				)
 			{
 				ModuleAttachMode mkpam = srcPart.Modules["ModuleAttachMode"] as ModuleAttachMode;
 				mkpam.isWelded = isWeldingTool;
-                //Debug.Log("OnItemMove3 " + isWeldingTool);
+				//Debug.Log("OnItemMove2 " + isWeldingTool);
 			}
 		}
 
 		//to attach, the receiver (parent) parts need the same canWeld proty than the tool (children part already check in OnItemUse)
 		protected override bool OnCheckAttach(Part srcPart, Part tgtPart, ref string toolInvalidMsg)
-        {
+		{
+			//Debug.Log("OnCheckAttach2 begin ");
 			if (!base.OnCheckAttach(srcPart, tgtPart, ref toolInvalidMsg)) return false;
 			//default (when ModuleAttachMode is not here) : magical yes
 			bool cannotAttach = false;
@@ -146,8 +154,8 @@ namespace KIS_Welder
 				cannotAttach = !mkpam.canBeWeld && !mkpam.canBeScrewed;
 				if (!cannotAttach) wrongTool = isWeldingTool ? !mkpam.canBeWeld : !mkpam.canBeScrewed;
 			}
-            //Debug.Log("OnCheckAttach2 " + (srcPart == null ? "null" : srcPart.name) + " => " +
-            //    (tgtPart == null ? "null" : tgtPart.name) + ", " + wrongTool + ", " + cannotAttach);
+			//Debug.Log("OnCheckAttach2 " + (srcPart == null ? "null" : srcPart.name) + " => " +
+			//    (tgtPart == null ? "null" : tgtPart.name) + ", " + wrongTool + ", " + cannotAttach);
 			if (!wrongTool && !cannotAttach)
 			{
 				return true;
